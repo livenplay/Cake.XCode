@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -164,6 +164,11 @@ namespace Cake.XCode
         public bool ExportArchive { get; set; }
 
         /// <summary>
+        /// Specifies that path to exportOptions.plist
+        /// <value>Export options .plist file path.</value>
+        public FilePath ExportOptionsPlist { get; set; }
+
+        /// <summary>
         /// Specifies the format that the archive should be exported as (e.g. ipa, pkg, app)
         /// </summary>
         /// <value>The export format.</value>
@@ -222,10 +227,22 @@ namespace Cake.XCode
         public string ExportLanguage { get; set; }
 
         /// <summary>
+        /// Specifies custom additional attributes for xcodebuild 
+        /// </summary>
+        /// <value>Custom attributes.</value>
+        public string Custom { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether project should be cleaned.
         /// </summary>
         /// <value><c>true</c> if project should be cleaned; otherwise, <c>false</c>.</value>
         public bool Clean { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether project should be archived instead of building.
+        /// </summary>
+        /// <value><c>true</c> if project should be archived; otherwise, <c>false</c>.</value>
+        public bool Archive { get; set; }
 
         /// <summary>
         /// Export format type.
@@ -355,6 +372,9 @@ namespace Cake.XCode
             if (settings.ExportArchive)
                 builder.Append ("-exportArchive");
 
+            if (settings.ExportOptionsPlist != null)
+                builder.Append ("-exportOptionsPlist " + GetQuotedAbsolute (settings.ExportOptionsPlist));
+
             if (settings.ExportFormat.HasValue)
                 builder.Append ("-exportFormat " + settings.ExportFormat.Value.ToString ().ToLowerInvariant ());
 
@@ -385,7 +405,13 @@ namespace Cake.XCode
             if (!string.IsNullOrEmpty (settings.ExportLanguage))
                 builder.Append ("-exportLanguage " + settings.ExportLanguage);
 
-            builder.Append ("build");
+            if (!string.IsNullOrEmpty (settings.Custom))
+                builder.Append (settings.Custom);
+
+            if (settings.Archive)
+                builder.Append ("archive");
+            else
+                builder.Append ("build");
 
             if (settings.Clean)
                 builder.Append ("clean");
@@ -424,4 +450,3 @@ namespace Cake.XCode
         }
     }
 }
-
